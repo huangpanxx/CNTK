@@ -17,12 +17,12 @@
 #include <mutex>
 #include <ctime>
 #include <time.h>
-#include <direct.h>
 #include "CUDAPageLockedMemAllocator.h"
 #include <chrono>
 #include <thread>
 #include "LzmaDec.h"
 #include "zlib.h"
+
 #ifndef _WIN32
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -30,6 +30,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/stat.h>
+#else
+#include <direct.h>
 #endif
 
 
@@ -329,7 +332,11 @@ namespace Microsoft {
 
 			void InitCacheDir(const char* dirPath, int maxFileIndex = 100) {
 				//std C++ has no protable code to iterate a dir
+#ifdef _WIN32
 				int flag = _mkdir(dirPath);
+#else
+				int flag = mkdir(dirPath, 0755);
+#endif
 				if (flag != 0) {
 					char buf[255];
 					for (int i = 0; i < maxFileIndex; ++i) {
